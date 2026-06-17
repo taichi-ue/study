@@ -1,21 +1,21 @@
-const CACHE_NAME = 'study-app-v1';
+const CACHE_NAME = 'study-app-v2';
 const ASSETS = [
-  '/',
-  '/index.html',
-  '/quick.html',
-  '/css/style.css',
-  '/manifest.json',
-  '/icons/icon-192.png',
-  '/icons/icon-512.png',
-  '/js/db.js',
-  '/js/notify.js',
-  '/js/home.js',
-  '/js/calendar.js',
-  '/js/stats.js',
-  '/js/categories.js',
-  '/js/settings.js',
-  '/js/streak.js',
-  '/js/app.js',
+  './',
+  './index.html',
+  './quick.html',
+  './css/style.css',
+  './manifest.json',
+  './icons/icon-192.png',
+  './icons/icon-512.png',
+  './js/db.js',
+  './js/streak.js',
+  './js/notify.js',
+  './js/home.js',
+  './js/calendar.js',
+  './js/stats.js',
+  './js/categories.js',
+  './js/settings.js',
+  './js/app.js',
 ];
 
 self.addEventListener('install', (event) => {
@@ -53,7 +53,7 @@ self.addEventListener('fetch', (event) => {
         });
         return response;
       }).catch(() => {
-        return caches.match('/index.html');
+        return caches.match('./index.html');
       });
     })
   );
