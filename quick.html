@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>記録する - 学習継続トラッカー</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="app-header">
+  <h1>学習を記録</h1>
+</header>
+
+<main style="padding: 24px 16px;">
+  <div class="home-form">
+    <div class="form-group">
+      <label>日付</label>
+      <input type="date" id="log-date">
+    </div>
+    <div class="form-group">
+      <label>カテゴリ</label>
+      <select id="log-category">
+        <option value="">選択してください</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>学習時間（分）</label>
+      <input type="number" id="log-duration" min="1" placeholder="例: 30">
+    </div>
+    <div class="form-group">
+      <label>メモ（任意）</label>
+      <textarea id="log-memo" placeholder="例: フレームワークの基本をまとめた" rows="3"></textarea>
+    </div>
+    <button class="btn-primary btn-large" id="log-submit">記録する</button>
+    <div id="result-message" style="margin-top: 16px; display: none;"></div>
+  </div>
+</main>
+
+<script src="js/db.js"></script>
+<script src="js/notify.js"></script>
+<script>
+async function initQuick() {
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('log-date').value = today;
+
+  const categories = await dbGetAll('categories');
+  const select = document.getElementById('log-category');
+  categories
+    .sort((a, b) => a.sortOrder - b.sortOrder)
+    .forEach(cat => {
+      const opt = document.createElement('option');
+      opt.value = cat.id;
+      opt.textContent = cat.name;
+      select.appendChild(opt);
+    });
+
+  document.getElementById('log-submit').addEventListener('click', async () => {
+    const date = document.getElementById('log-date').value;
+    const categoryId = parseInt(document.getElementById('log-category').value);
+    const duration = parseInt(document.getElementById('log-duration').value);
+    const memo = document.getElementById('log-memo').value;
+
+    if (!date || !categoryId || !duration) {
+      alert('日付、カテゴリ、学習時間を入力してください');
+      return;
+    }
+
+    if (duration <= 0) {
+      alert('学習時間は1分以上を入力してください');
+      return;
+    }
+
+    try {
+      await dbAdd('studyLogs', {
+        date,
+        categoryId,
+        durationMinutes: duration,
+        memo: memo || '',
+        createdAt: new Date().toISOString(),
+      });
+
+      await updateAppBadge();
+
+      const resultEl = document.getElementById('result-message');
+      resultEl.innerHTML = `
+        <div style="background: #d4edda; color: #155724; padding: 12px; border-radius: 6px; text-align: center;">
+          ✓ 記録しました！<br>
+          <a href="index.html" style="color: #155724; font-weight: bold;">ホームに戻る</a>
+        </div>
+      `;
+      resultEl.style.display = 'block';
+
+      document.querySelector('.home-form').style.display = 'none';
+    } catch (error) {
+      alert('記録に失敗しました');
+    }
+  });
+
+  await initializeNotifications();
+}
+
+initializeData().then(() => initQuick());
+</script>
+</body>
+</html>
